@@ -1,102 +1,52 @@
 <?php
-session_start();
-include("./db_connect.php");
-
-$swalType = "";
-$swalMessage = "";
-$redirectUrl = "";
-
-if(isset($_POST["title"])){
+    include("./db_connect.php");
+?>
+<?php
     //
-    $title = $_POST["title"];
-    $id = $_SESSION["UID"] ?? '';
-
-    if(empty($id)){
-        $swalType = "error";
-        $swalMessage = "Session expired. Please log in again.";
-        $redirectUrl = "http://localhost/E-commerce1/User/store.php";
-    }else{
-        $query = "SELECT * FROM `user_cred` WHERE `ID` = '$id'";
+    global $conn;
+    if(isset($_GET["uid"]) && (isset($_GET["pid"]))){
+        //
+        $id1 = $_GET["uid"];
+        $id2 = $_GET["pid"];
+        global $conn;
+        $query = "SELECT * FROM `product_details` WHERE `ID` = '$id2'";
         $result = mysqli_query($conn, $query);
-        if($result && mysqli_num_rows($result) > 0){
-            $row = mysqli_fetch_assoc($result);
-            $name = $row["Name"];
-            $gmail = $row["Gmail"];
+        $rows = mysqli_fetch_assoc($result);
+        $title = $rows["Title"];
+        $brand = $rows["Brand"];
+        $category = $rows["Category"];
+        $image = $rows["Image"];
+        $price = $rows["Price"];
+        if($result){
+            $query = "SELECT `Name`, `Gmail` FROM `user_cred` WHERE `ID` = '$id1'";
+            $result = mysqli_query($conn, $query);
+            $rows = mysqli_fetch_assoc($result);
+            $name = $rows["Name"];
+            $gmail = $rows["Gmail"];
             //
-            $query1 = "SELECT * FROM `product_details` WHERE `Title` = '$title'";
-            $result1 = mysqli_query($conn, $query1);
-
-            if($result1 && mysqli_num_rows($result1) > 0){
-                $rows = mysqli_fetch_assoc($result1);
-                $brand = $rows["Brand"];
-                $category = $rows["Category"];
-                $image = $rows["Image"];
-                $price = $rows["Price"];
-
-                $query5 = "SELECT * FROM `order_stock` WHERE `Product`='$title' AND `Quantity`='0'";
-                $result5 = mysqli_query($conn, $query5);
-
-                if($result5 && mysqli_num_rows($result5) > 0){
-                    $swalType = "error";
-                    $swalMessage = "Out Of Stock";
-                    $redirectUrl = "http://localhost/E-commerce1/User/user_store.php";
-                }else{
-                    $insert = "INSERT INTO `records`(`Name`, `Gmail`, `Title`, `Brand`, `Category`, `Image`, `Price`, `Quantity`, `Total_Price`, `Order_Placed`, `Order_Number`, `Status`)
-                               VALUES('$name', '$gmail', '$title', '$brand', '$category', '$image', '$price', '1', '$price', '', '', 'In Cart')";
-                    //
-                    $result4 = mysqli_query($conn, $insert);
-                    //
-                    /*$query3 = "SELECT * FROM `records` WHERE `Gmail`='$gmail' AND `Title`='$title'";
-                    $result3 = mysqli_query($conn, $query3);
-                    $row = mysqli_fetch_assoc($result3);
-                    $_SESSION["RID"] = $row["ID"];*/
-                    //
-
-                    if($result4){
-                        $swalType = "success";
-                        $swalMessage = "Item Added to Wishlist Cart Successfully";
-                        $redirectUrl = "http://localhost/E-commerce1/User/user_store.php";
-                    }else{
-                        $swalType = "error";
-                        $swalMessage = "Database error: " . mysqli_error($conn);
-                        $redirectUrl = "http://localhost/E-commerce1/User/user_store.php";
-                    }
-                }
+            $query = "SELECT * FROM `records` WHERE `Name`='$name' AND `Gmail`='$gmail' AND `Title`='$title' AND `Brand`='$brand' AND `Category`='$category'";
+            $result = mysqli_query($conn, $query);
+            $nr = mysqli_num_rows($result);
+            if($nr > 0){
+                echo "<script>
+                alert('Item Already Added to Wishlist Cart')
+                window.location.href='http://localhost/E-commerce1/User/user_store.php'
+                </script>";
             }else{
-                $swalType = "error";
-                $swalMessage = "Product not found.";
-                $redirectUrl = "http://localhost/E-commerce1/User/user_store.php";
+                $query = "INSERT INTO `records`(`Name`, `Gmail`, `Title`, `Brand`, `Category`, `Image`, `Price`, `Order_Placed`, `Status`, `Order_Received`)
+                VALUES('$name', '$gmail', '$title', '$brand', '$category', '$image', '$price', '', 'In Cart', '')";
+                $result = mysqli_query($conn, $query);
+                if($result){
+                    echo "<script>
+                    alert('Item Added to Wishlist Cart Successfully')
+                    window.location.href='http://localhost/E-commerce1/User/user_store.php'
+                    </script>";
+                }else{
+                    die(mysqli_error($conn));
+                }
             }
         }else{
-            $swalType = "error";
-            $swalMessage = "User not found.";
-            $redirectUrl = "http://localhost/E-commerce1/User/store.php";
+            die(mysqli_error($conn));
         }
     }
-} else {
-    $swalType = "error";
-    $swalMessage = "Invalid access.";
-    $redirectUrl = "http://localhost/E-commerce1/User/user_store.php";
-}
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Redirecting...</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
-<body>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    Swal.fire({
-        icon: '<?= htmlspecialchars($swalType, ENT_QUOTES) ?>',
-        title: '<?= htmlspecialchars($swalMessage, ENT_QUOTES) ?>',
-        confirmButtonText: 'OK'
-    }).then(() => {
-        window.location.href = '<?= htmlspecialchars($redirectUrl, ENT_QUOTES) ?>';
-    });
-});
-</script>
-</body>
-</html>

@@ -1,68 +1,39 @@
-<?php
-include("./db_connect.php");
-//
-session_start();
-
-$message = "";
-$redirect = "";
-$icon = "";
-
-if (isset($_POST["register-submit"])) {
-    $name = $_POST["name"];
-    $gmail = $_POST["gmail"];
-    $password = $_POST["password"];
-
-    global $conn;
-
-    $checkQuery = "SELECT * FROM `user_cred` WHERE `Gmail`='$gmail'";
-    $checkResult = mysqli_query($conn, $checkQuery);
-    $rows = mysqli_num_rows($checkResult);
-
-    if ($rows == 0) {
-        $insertQuery = "INSERT INTO `user_cred`(`Name`, `Gmail`, `Password`) VALUES ('$name', '$gmail','$password')";
-        $insertResult = mysqli_query($conn, $insertQuery);
-        //
-        $query = "SELECT * FROM `user_cred` WHERE `Gmail`='$gmail'";
-        $result = mysqli_query($conn, $query);
-        $row = mysqli_fetch_assoc($result);
-        $id = $row["ID"];
-        //
-        $_SESSION["UID"] = $id;
-        //
-        if ($insertResult) {
-            $message = "Registration Successful!";
-            $icon = "success";
-            $redirect = "http://localhost/E-commerce1/User/login.php";
-        } else {
-            $message = "Registration Failed!";
-            $icon = "error";
-            $redirect = "http://localhost/E-commerce1/User/register.php";
-        }
-    } else {
-        $message = "Already Registered!";
-        $icon = "warning";
-        $redirect = "http://localhost/E-commerce1/User/register.php";
-    }
-    //
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Registration Status</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS Link-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <title>E-commerce Register Page</title>
 </head>
 <body>
-    <script>
-        Swal.fire({
-            title: '<?php echo $message; ?>',
-            icon: '<?php echo $icon; ?>',
-            confirmButtonText: 'OK'
-        }).then(() => {
-            window.location.href = '<?php echo $redirect; ?>';
-        });
-    </script>
+    <!-- first child-->
+    <div class="d-flex justify-content-center my-5">
+  <div class="card shadow-lg p-3 w-100" style="max-width: 600px; border-radius: 20px;">
+    <div class="card-body text-center">
+      <h5 class="card-title mb-4">Register Page</h5>
+      <form action="http://localhost/E-commerce1/Includes/register.php" method="POST">
+        <div class="d-flex align-items-center mb-3">
+          <label for="name" class="me-3 mb-0" style="width: 130px;">Name</label>
+          <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="d-flex align-items-center mb-3">
+          <label for="gmail" class="me-3 mb-0" style="width: 130px;">Gmail</label>
+          <input type="email" class="form-control" id="gmail" placeholder="user@gmail.com" name="gmail" required>
+        </div>
+        <div class="d-flex align-items-center mb-3">
+          <label for="password" class="me-3 mb-0" style="width: 130px;">Password</label>
+          <input type="password" id="password" class="form-control" name="password" placeholder="••••••••" required>
+        </div>
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary w-100" name="register-submit">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+    <!-- Bootstrap JS Link-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
 </body>
 </html>
